@@ -17,7 +17,7 @@ import com.security.jwtAuthentication.service.AuthenticationService;
 public class AuthenticationController {
     
     @Autowired
-    private final AuthenticationService service;
+    AuthenticationService service;
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest req) {

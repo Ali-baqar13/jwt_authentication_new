@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 
 @Configuration
-@ConfigurationProperties(prefix ="app.security.")
+@ConfigurationProperties(prefix ="app.security")
 
 public class KeyConfiguration {
     private String secretKey;
@@ -15,8 +15,8 @@ public class KeyConfiguration {
         return this.secretKey;
     }
 
-    public String setSecretKey(String secretKey){
-        return this.secretKey = secretKey;
+    public void setSecretKey(String secretKey){
+         this.secretKey = secretKey;
     }
 
     

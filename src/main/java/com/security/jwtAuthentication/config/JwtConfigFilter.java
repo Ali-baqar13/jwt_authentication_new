@@ -1,61 +1,72 @@
-    package com.security.jwtAuthentication.config;
+package com.security.jwtAuthentication.config;
 
-    import java.io.IOException;
+import java.io.IOException;
 
-    import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-    import org.springframework.security.core.context.SecurityContextHolder;
-    import org.springframework.security.core.userdetails.UserDetails;
-    import org.springframework.security.core.userdetails.UserDetailsService;
-    import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-    import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-    import com.security.jwtAuthentication.jwt_service.JwtService;
+import com.security.jwtAuthentication.jwt_service.JwtService;
 
-    import jakarta.servlet.FilterChain;
-    import jakarta.servlet.ServletException;
-    import jakarta.servlet.http.HttpServletRequest;
-    import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-    public class JwtConfigFilter extends OncePerRequestFilter {
+@Component
+public class JwtConfigFilter extends OncePerRequestFilter {
 
-        @Autowired
-        private  JwtService jwtService;
-        @Autowired
+    @Autowired
+    private JwtService jwtService;
 
-        private UserDetailsService userService;
+    @Autowired
+    private UserDetailsService userService;
 
-        @Override
-        protected void doFilterInternal(
-            HttpServletRequest request, 
-            HttpServletResponse response, 
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
             FilterChain filterChain)
-                throws ServletException, IOException {
-                    final String authHeader = request.getHeader("Authorization");
-                    final String jwt;
-                    final String userEmail;
+            throws ServletException, IOException {
 
-                    if(authHeader == null || !authHeader.startsWith("Bearer")){
-                        filterChain.doFilter(request, response);
-                        return;
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String userEmail;
 
-                    }
-                    jwt = authHeader.substring(7);
-                    userEmail = jwtService.extractUsername(jwt);
-
-                    if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
-                        UserDetails userDetails = this.userService.loadUserByUsername(userEmail);
-                        if(jwtService.isTokenValid(jwt, userDetails)){
-                            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                            SecurityContextHolder.getContext().setAuthentication(authToken);
-                        }
-                    }
-                    filterChain.doFilter(request, response);
-
-            
-            throw new UnsupportedOperationException("Unimplemented method 'doFilterInternal'");
+        if (authHeader == null || !authHeader.startsWith("Bearer")) {
+            filterChain.doFilter(request, response);
+            return;
         }
-        
-        
+
+        jwt = authHeader.substring(7);
+        userEmail = jwtService.extractUsername(jwt);
+
+        if (userEmail != null &&
+                SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            UserDetails userDetails = this.userService.loadUserByUsername(userEmail);
+
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities());
+
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request));
+
+                SecurityContextHolder.getContext()
+                        .setAuthentication(authToken);
+            }
+        }
+
+        filterChain.doFilter(request, response);
     }
+}

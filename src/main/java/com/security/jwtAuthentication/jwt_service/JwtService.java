@@ -24,7 +24,7 @@ import io.jsonwebtoken.security.Keys;
 public class JwtService {
 
     @Autowired
-    final KeyConfiguration secretKey;
+     KeyConfiguration secretKey;
 
     public String extractUsername(String token) {
         return null;
